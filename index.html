@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AllOfUs - 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            margin-bottom: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .school-name {
+            font-size: 18px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-btn {
+            padding: 10px 24px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+            border: none;
+        }
+
+        .header-btn:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 50px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-text {
+            font-size: 48px;
+            font-weight: 600;
+            color: #1d1d1f;
+            line-height: 1.3;
+            margin-bottom: 15px;
+        }
+
+        .welcome-text .highlight {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .date-text {
+            font-size: 24px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .card-subtitle {
+            font-size: 15px;
+            color: #86868b;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-weight: 500;
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+            margin-top: 20px;
+        }
+
+        .card-footer::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-footer::after {
+            transform: translateX(5px);
+        }
+
+        /* 각 카드별 색상 */
+        .card-seat .card-icon {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .card-room .card-icon {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .card-schedule .card-icon {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .card-study .card-icon {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+        }
+
+        .special-card {
+            position: relative;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .special-card .card-title,
+        .special-card .card-subtitle {
+            color: white;
+        }
+
+        .special-card .card-footer {
+            color: white;
+        }
+
+        .special-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .special-card .badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .welcome-section {
+                padding: 30px;
+            }
+
+            .welcome-text {
+                font-size: 32px;
+            }
+
+            .date-text {
+                font-size: 18px;
+            }
+
+            .card {
+                padding: 30px;
+                min-height: 240px;
+            }
+
+            .card-title {
+                font-size: 24px;
+            }
+        }
+
+        /* 로딩 애니메이션 */
+        .card {
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">AllOfUs</div>
+        <div class="school-name">경희고등학교</div>
+        <div class="header-right">
+            <a href="my-reservations.html" class="header-btn">최근기록</a>
+            <a href="login.html" class="header-btn" id="auth-link">로그인</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1 class="welcome-text" id="welcome-title">
+                요즘 학생들의<br>
+                <span class="highlight">필수템.</span>
+            </h1>
+            <p class="date-text" id="date-display">오늘은 11월 7일</p>
+        </div>
+
+        <div class="cards-grid">
+            <!-- 청운재 좌석 예약 -->
+            <div class="card card-seat" onclick="handleNavigation('bc.html')">
+                <div class="card-content">
+                    <div class="card-icon">🎫</div>
+                    <span class="badge">NEW</span>
+                    <h2 class="card-title">청운재 좌석 예약</h2>
+                    <p class="card-subtitle" id="seat-subtitle">로그인 해주세요.</p>
+                </div>
+                <div class="card-footer">지금 예약하기</div>
+            </div>
+
+            <!-- 교실 대여 -->
+            <div class="card card-room" onclick="handleNavigation('class.html')">
+                <div class="card-content">
+                    <div class="card-icon">🏫</div>
+                    <span class="badge">POPULAR</span>
+                    <h2 class="card-title">교실 대여</h2>
+                    <p class="card-subtitle" id="room-subtitle">로그인 해주세요.</p>
+                </div>
+                <div class="card-footer">예약 가능 교실 보기</div>
+            </div>
+
+            <!-- 수행평가 일정 -->
+            <div class="card card-schedule" onclick="handleNavigation('sh.html')">
+                <div class="card-content">
+                    <div class="card-icon">📅</div>
+                    <span class="badge">ESSENTIAL</span>
+                    <h2 class="card-title">수행평가 일정</h2>
+                    <p class="card-subtitle" id="assignment-subtitle">로그인 해주세요.</p>
+                </div>
+                <div class="card-footer">일정 확인하기</div>
+            </div>
+
+            <!-- 학습 계획 나누기 -->
+            <div class="card card-study special-card" onclick="handleNavigation('study.html')">
+                <div class="card-content">
+                    <div class="card-icon">✨</div>
+                    <span class="badge">HOT</span>
+                    <h2 class="card-title">학습 계획 나누기</h2>
+                    <p class="card-subtitle">친구들과 함께 효율적으로 공부하세요</p>
+                </div>
+                <div class="card-footer">계획 만들기</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase 모듈 임포트
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1HNrS-TcAUvmJvWJYowzIPbyIC1_sMjg",
+            authDomain: "hack-7974a.firebaseapp.com",
+            projectId: "hack-7974a",
+            storageBucket: "hack-7974a.firebasestorage.app",
+            messagingSenderId: "831807416935",
+            appId: "1:831807416935:web:461949fd6baa1510e042c2",
+            measurementId: "G-DKMJZBKLG2"
+        };
+
+        // Firebase 초기화
+        const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        let currentUser = null;
+
+        // 로그아웃 기능
+        function logout() {
+            signOut(auth).then(() => {
+                console.log("로그아웃 성공");
+            }).catch((error) => {
+                console.error("로그아웃 실패:", error);
+            });
+        }
+
+        // 사용자 데이터 로드
+        async function loadUserData(user) {
+            const userRef = ref(database, user.uid + '/username');
+            const snapshot = await get(userRef);
+            const welcomeTitle = document.getElementById('welcome-title');
+            
+            if (snapshot.exists()) {
+                const username = snapshot.val();
+                welcomeTitle.innerHTML = `<span class="highlight">${username}</span>님,<br>학생들의<br>필수템,`;
+            } else {
+                welcomeTitle.innerHTML = `요즘 학생들의<br><span class="highlight">필수템,</span>`;
+            }
+        }
+
+        // 페이지 네비게이션 처리
+        window.handleNavigation = function(page) {
+            if (!currentUser) {
+                alert('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동합니다.');
+                window.location.href = 'login.html';
+                return;
+            }
+            window.location.href = page;
+        };
+
+        // 동적 날짜 표시
+        (function updateDate() {
+            const today = new Date();
+            const month = today.getMonth() + 1;
+            const date = today.getDate();
+            const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+            const dayName = days[today.getDay()];
+            
+            document.getElementById('date-display').textContent = 
+                `오늘은 ${month}월 ${date}일 ${dayName}`;
+        })();
+
+        // 인증 상태 감지 및 UI 업데이트
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const authLink = document.getElementById('auth-link');
+            const seatSubtitle = document.getElementById('seat-subtitle');
+            const roomSubtitle = document.getElementById('room-subtitle');
+            const assignmentSubtitle = document.getElementById('assignment-subtitle');
+
+            if (user) {
+                console.log("로그인 상태:", user.email);
+                loadUserData(user);
+
+                authLink.textContent = "로그아웃";
+                authLink.removeAttribute('href');
+                authLink.style.cursor = 'pointer';
+                authLink.onclick = logout;
+
+                seatSubtitle.textContent = "원하는 좌석을 미리 선택하고 편하게 즐기세요";
+                roomSubtitle.textContent = "동아리방, 세미나실 등 다양한 공간을 예약하세요";
+                assignmentSubtitle.textContent = "다가오는 수행평가를 한눈에 확인하세요";
+
+            } else {
+                console.log("로그아웃 상태");
+                currentUser = null;
+
+                authLink.textContent = "로그인";
+                authLink.setAttribute('href', 'login.html');
+                authLink.style.cursor = '';
+                authLink.onclick = null;
+
+                seatSubtitle.textContent = "로그인하고 청운재 좌석을 예약하세요";
+                roomSubtitle.textContent = "로그인하고 교실 예약 서비스를 이용하세요";
+                assignmentSubtitle.textContent = "로그인하고 나만의 학습 일정을 관리하세요";
+
+                document.getElementById('welcome-title').innerHTML = 
+                    '요즘 학생들의<br><span class="highlight">필수템.</span>';
+            }
+        });
+    </script>
+</body>
+</html>

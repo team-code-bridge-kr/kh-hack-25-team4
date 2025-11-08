@@ -1,0 +1,22 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    height: 100vh; /* 전체 뷰포트 높이 사용 */
+}
+
+.aspect-ratio-9-16 {
+    width: 360px;
+    height: 640px;
+    overflow-y: auto; /* 스크롤 활성화 */
+}
+
+.logo {
+    width: 80px; /* 로고 너비 조정 */
+    height: auto; /* 비율 유지 */
+}
+
+.custom-width {
+    width: 70%; /* 70% 너비 설정 */
+}
+.button-bg {
+    background-color: rgb(0, 74, 255);
+}

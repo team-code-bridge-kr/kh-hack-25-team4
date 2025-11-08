@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>수행평가 일정</title>
+    
+    <style>
+        /* 학습 계획 페이지의 기본 스타일을 가져와 적용 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            /* 배경을 일정에 맞게 파란 계열로 변경 */
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button {
+            /* 스타일 유지를 위해 그대로 사용 */
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: white;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 상단에 배치 */
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            color: white;
+        }
+
+        .headline {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .subtext {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .schedule-form {
+            /* plan-form 스타일 재활용 */
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .schedule-form input,
+        .schedule-form select {
+            /* input 스타일 재활용 */
+            width: 100%;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        /* Date input 레이블 스타일 */
+        .schedule-form label {
+            display: block; 
+            text-align: left; 
+            color: rgba(255,255,255,0.9); 
+            margin: 0.5rem 0 0.2rem; 
+            font-weight:600;
+        }
+
+
+        .schedule-form input:focus,
+        .schedule-form select:focus {
+            border-color: white;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            /* 버튼 스타일 재활용 */
+            width: 100%;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn.primary {
+            background: white;
+            color: #0072ff; /* 버튼 색상을 변경된 배경에 맞게 조정 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* --- 일정 목록/캘린더 스타일 --- */
+        .schedule-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .schedule-list {
+            margin-top: 2rem;
+            text-align: left;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+        
+        .schedule-item {
+            /* plan-item 스타일 재활용 */
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .schedule-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .schedule-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: white;
+        }
+        
+        .schedule-date {
+            font-size: 1rem;
+            color: #ffeb3b; /* 강조 색상 */
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            /* delete-btn 스타일 재활용 */
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            float: right; /* 삭제 버튼 오른쪽 정렬 */
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .headline {
+                font-size: 2.5rem;
+            }
+            .subtext {
+                font-size: 1.2rem;
+            }
+            .schedule-form {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html" class="back-button" aria-label="대시보드로 돌아가기">← 돌아가기</a>
+        <div class="logo">수행평가 일정</div>
+        <a href="/schedule.html" class="back-button" aria-label="수행평가 일정 보기">📅 일정 보기</a>
+    </div>
+
+    <section class="hero">
+        <h1 class="headline">수행평가 달력</h1>
+        <p class="subtext">잊지 않도록 일정을 기록하세요 📝</p>
+
+        <form class="schedule-form" id="scheduleForm">
+            <input type="text" id="assessmentName" placeholder="수행평가 이름 (예: 국어 발표)" required />
+            
+            <label for="dueDate">마감 날짜 선택</label>
+            <input type="date" id="dueDate" required />
+            
+            <input type="text" id="subjectName" placeholder="과목 이름 (예: 국어)" required />
+            
+            <button type="submit" class="btn primary">일정 저장하기</button>
+        </form>
+
+        <div class="schedule-container">
+            <h2 style="text-align: left; color: white; margin-bottom: 1rem;">🗓️ 저장된 일정</h2>
+            <div class="schedule-list" id="scheduleList">
+                </div>
+        </div>
+        
+    </section>
+
+    <footer class="footer">© 2025 청운재 앱</footer>
+
+    <script type="module">
+        // Firebase 모듈 임포트
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1HNrS-TcAUvmJvWJYowzIPbyIC1_sMjg",
+            authDomain: "hack-7974a.firebaseapp.com",
+            projectId: "hack-7974a",
+            storageBucket: "hack-7974a.firebasestorage.app",
+            messagingSenderId: "831807416935",
+            appId: "1:831807416935:web:461949fd6baa1510e042c2",
+            measurementId: "G-DKMJZBKLG2",
+            databaseURL: "https://hack-7974a-default-rtdb.firebaseio.com/"
+        };
+
+        // Firebase 초기화
+        const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scheduleForm = document.getElementById('scheduleForm');
+            const scheduleListDiv = document.getElementById('scheduleList');
+
+            let schedules = [];
+            let currentUserId = null;
+
+            // 사용자 인증 상태 확인
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    await loadSchedules();
+                    displaySchedules();
+                } else {
+                    currentUserId = null;
+                    schedules = [];
+                    scheduleListDiv.innerHTML = '<p style="color: rgba(255,255,255,0.85); text-align:center;">로그인이 필요합니다.</p>';
+                }
+            });
+
+            async function loadSchedules() {
+                if (!currentUserId) {
+                    schedules = [];
+                    return;
+                }
+
+                try {
+                    const schedulesRef = ref(database, `users/${currentUserId}/assessmentSchedules`);
+                    const snapshot = await get(schedulesRef);
+                    
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        schedules = Object.values(data || {});
+                        if (!Array.isArray(schedules)) {
+                            schedules = [];
+                        }
+                        // 날짜 기준으로 정렬
+                        schedules.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    } else {
+                        schedules = [];
+                    }
+                } catch (error) {
+                    console.error('일정 로드 실패:', error);
+                    schedules = [];
+                }
+            }
+
+            async function saveSchedules() {
+                if (!currentUserId) {
+                    alert('로그인이 필요합니다.');
+                    return;
+                }
+
+                try {
+                    const schedulesRef = ref(database, `users/${currentUserId}/assessmentSchedules`);
+                    // 배열을 객체로 변환 (id를 키로 사용)
+                    const schedulesObj = {};
+                    schedules.forEach(schedule => {
+                        schedulesObj[schedule.id] = schedule;
+                    });
+                    await set(schedulesRef, schedulesObj);
+                } catch (error) {
+                    console.error('일정 저장 실패:', error);
+                    alert('일정 저장에 실패했습니다.');
+                }
+            }
+
+            async function handleSubmit(event) {
+                event.preventDefault();
+
+                if (!currentUserId) {
+                    alert('로그인이 필요합니다.');
+                    return;
+                }
+
+                const name = document.getElementById('assessmentName').value.trim();
+                const date = document.getElementById('dueDate').value; // YYYY-MM-DD
+                const subject = document.getElementById('subjectName').value.trim();
+
+                if (!name || !date || !subject) {
+                    alert('수행평가 이름, 날짜, 과목을 모두 입력해주세요.');
+                    return;
+                }
+                
+                // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오기
+                const today = new Date().toISOString().slice(0, 10);
+                
+                // 마감 날짜가 오늘보다 이전이면 경고 (선택적)
+                if (date < today) {
+                    alert('마감 날짜는 오늘 이후로 설정해주세요.');
+                    return;
+                }
+
+                const newSchedule = {
+                    id: Date.now(),
+                    name: name,
+                    date: date,
+                    subject: subject,
+                    createdAt: new Date().toISOString()
+                };
+
+                schedules.push(newSchedule);
+                scheduleForm.reset();
+                await saveSchedules();
+                displaySchedules();
+            }
+
+            async function deleteSchedule(id) {
+                if (!currentUserId) {
+                    alert('로그인이 필요합니다.');
+                    return;
+                }
+
+                schedules = schedules.filter(item => item.id !== id);
+                await saveSchedules();
+                displaySchedules();
+            }
+            
+            function formatKoreanDate(dateString) {
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+                return `${month}월 ${day}일 (${dayOfWeek})`;
+            }
+
+            function displaySchedules() {
+                // 날짜 기준으로 다시 정렬하여 최신 일정부터 표시
+                schedules.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                if (!schedules.length) {
+                    scheduleListDiv.innerHTML = '<p style="color: rgba(255,255,255,0.85); text-align:center;">저장된 수행평가 일정이 없습니다.</p>';
+                    return;
+                }
+                
+                scheduleListDiv.innerHTML = schedules.map(item => `
+                    <div class="schedule-item">
+                        <button class="delete-btn" data-schedule-id="${item.id}">삭제</button>
+                        <div class="schedule-title">📌 [${item.subject}] ${item.name}</div>
+                        <div class="schedule-date">마감일: ${formatKoreanDate(item.date)}</div>
+                    </div>
+                `).join('');
+
+                scheduleListDiv.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const scheduleId = Number(button.getAttribute('data-schedule-id'));
+                        deleteSchedule(scheduleId);
+                    });
+                });
+            }
+
+            scheduleForm.addEventListener('submit', handleSubmit);
+        });
+    </script>
+</body>
+</html>

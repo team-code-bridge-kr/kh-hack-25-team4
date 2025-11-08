@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수행평가 일정</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body{
+      margin:0;
+      padding:0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color:#1d1d1f;
+      min-height: 100vh;
+      display:flex;
+      flex-direction:column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .navbar{
+      width:94%;
+      max-width:1100px;
+      margin:24px auto 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      background:rgba(255,255,255,0.12);
+      backdrop-filter:blur(18px);
+      padding:18px 28px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.25);
+      box-shadow:0 18px 40px rgba(0,0,0,0.18);
+    }
+
+    .nav-button{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 18px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.45);
+      background:rgba(255,255,255,0.18);
+      color:white;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:500;
+      letter-spacing:-0.2px;
+      transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position:absolute;
+      left:28px;
+      top:50%;
+      transform:translateY(-50%);
+      cursor:pointer;
+      font-family:inherit;
+    }
+    
+    button.nav-button{
+      border:1px solid rgba(255,255,255,0.45);
+      outline:none;
+    }
+    
+    button.nav-button:focus{
+      outline:none;
+    }
+
+    .nav-button:hover{
+      background:rgba(255,255,255,0.28);
+      border-color:rgba(255,255,255,0.65);
+      box-shadow:0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .nav-title{
+      font-size:20px;
+      font-weight:600;
+      color:white;
+      letter-spacing:-0.3px;
+      text-shadow:0 2px 12px rgba(0,0,0,0.25);
+      text-align:center;
+    }
+
+    .content{
+      width:94%;
+      max-width:1100px;
+      margin:32px auto 48px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      flex:1 0 auto;
+    }
+    
+    .month-header{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-size:22px;
+      padding:12px 0 24px;
+      font-weight:500;
+      color:white;
+      gap:28px;
+      letter-spacing: -0.3px;
+      width:100%;
+    }
+    
+    .arrow{
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size:20px;
+      cursor:pointer;
+      user-select:none;
+      color:white;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .arrow:hover{ 
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
+    }
+    
+    .arrow:active {
+      transform: scale(0.95);
+    }
+
+    .calendar-box{
+      width:100%;
+      margin:0 0 40px;
+      background:rgba(255,255,255,0.95);
+      backdrop-filter:blur(20px);
+      border-radius:20px;
+      padding:32px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1);
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing: 8px;
+      font-size:15px;
+      text-align:center;
+      table-layout: fixed;
+    }
+    
+    th{
+      padding:12px 0;
+      font-weight:600;
+      color:#86868b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: calc(100% / 7);
+    }
+
+    td{ 
+      padding:0;
+      position:relative;
+      vertical-align:top;
+      height: 120px;
+      width: calc(100% / 7);
+    }
+
+    .day-box{
+      background:#ffffff;
+      height: 100%;
+      border-radius:12px;
+      border:1.5px solid #d2d2d7;
+      padding:10px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      cursor: default;
+      overflow: hidden;
+    }
+    
+    .day-box:hover {
+      border-color: #a0a0a8;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    
+    .day-num{
+      font-size:17px;
+      font-weight:500;
+      color:#1d1d1f;
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+
+    .day-box.has-plan{
+      background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
+      border-color:#667eea;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+    
+    .day-box.has-plan:hover {
+      border-color:#5568d3;
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .clear-btn{
+      position:absolute;
+      top:8px;
+      right:8px;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:rgba(0,0,0,0.05);
+      border:none;
+      color:#86868b;
+      font-size:16px;
+      line-height:24px;
+      text-align:center;
+      cursor:pointer;
+      transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+      transform: scale(0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .day-box.has-plan:hover .clear-btn{
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .clear-btn:hover{
+      background:#ff3b30;
+      color:white;
+      transform: scale(1.1);
+    }
+    
+    .clear-btn:active {
+      transform: scale(0.95);
+    }
+
+    .task-list{
+      list-style:none;
+      margin:0;
+      padding:0;
+      font-size:12px;
+      color:#1d1d1f;
+      text-align:left;
+      flex:1;
+      overflow-y:auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: #d2d2d7 transparent;
+    }
+    
+    .task-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .task-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .task-list::-webkit-scrollbar-thumb {
+      background: #d2d2d7;
+      border-radius: 2px;
+    }
+    
+    .task-list::-webkit-scrollbar-thumb:hover {
+      background: #a0a0a8;
+    }
+
+    .task-list li{
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+      border-radius:8px;
+      padding:6px 8px;
+      margin-top:6px;
+      line-height:1.4;
+      transition: all 0.2s ease;
+      animation: slideIn 0.3s ease-out;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .task-list li:first-child{
+      margin-top:0;
+    }
+    
+    .task-list li:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+    }
+    
+    .task-list li:hover > div {
+      transform: translateX(2px);
+    }
+
+    .task-list li strong{
+      display:block;
+      font-weight:600;
+      color:#667eea;
+      margin-bottom:2px;
+      font-size: 12px;
+      letter-spacing: -0.1px;
+    }
+    
+    .task-list li span {
+      color: #515154;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    /* 개별 항목 삭제 버튼 */
+
+    .task-list li > div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-delete-btn {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border-radius: 50%;
+      background: rgba(255, 59, 48, 0.1);
+      border: 1px solid rgba(255, 59, 48, 0.3);
+      color: #ff3b30;
+      font-size: 14px;
+      line-height: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      opacity: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-list li:hover .item-delete-btn {
+      opacity: 1;
+    }
+
+    .item-delete-btn:hover {
+      background: #ff3b30;
+      color: white;
+      border-color: #ff3b30;
+      transform: scale(1.1);
+    }
+
+    .item-delete-btn:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 768px){
+      .navbar{
+        flex-direction:column;
+        gap:12px;
+        text-align:center;
+        padding:16px 20px;
+      }
+      .nav-button{
+        position:static;
+        transform:none;
+        align-self:flex-start;
+      }
+      .nav-title{ font-size:18px; }
+      .content{ margin:24px auto 32px; }
+      .month-header{ font-size:18px; gap:20px; padding:10px 0 18px; }
+      .calendar-box{ padding:20px 16px; }
+      table { border-spacing: 4px; font-size: 14px; }
+      td { height: 100px; }
+      .day-box { padding: 8px; }
+      .day-num { font-size: 15px; }
+      .task-list li { font-size: 11px; padding: 5px 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <button type="button" class="nav-button" onclick="window.history.back()" aria-label="이전 페이지로 돌아가기">← 돌아가기</button>
+    <div class="nav-title">수행평가 일정</div>
+  </div>
+
+  <main class="content">
+    <div class="month-header">
+      <div class="arrow" onclick="changeMonth(-1)">◀</div>
+      <div id="monthTitle"></div>
+      <div class="arrow" onclick="changeMonth(1)">▶</div>
+    </div>
+
+    <div class="calendar-box">
+      <div id="calendar"></div>
+    </div>
+  </main>
+
+  <script type="module">
+    // Firebase 모듈 임포트
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+    // Firebase 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1HNrS-TcAUvmJvWJYowzIPbyIC1_sMjg",
+      authDomain: "hack-7974a.firebaseapp.com",
+      projectId: "hack-7974a",
+      storageBucket: "hack-7974a.firebasestorage.app",
+      messagingSenderId: "831807416935",
+      appId: "1:831807416935:web:461949fd6baa1510e042c2",
+      measurementId: "G-DKMJZBKLG2",
+      databaseURL: "https://hack-7974a-default-rtdb.firebaseio.com/"
+    };
+
+    // Firebase 초기화
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+
+    let currentUserId = null;
+
+    function escapeHTML(value){
+      return String(value ?? '').replace(/[&<>"']/g, (match) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[match] || match));
+    }
+
+    async function loadPlanEntries(){
+      const map = {};
+      
+      if (!currentUserId) {
+        return map;
+      }
+
+      // 1. studyPlans 읽기 (Firebase에서)
+      try{
+        const studyPlansRef = ref(database, `users/${currentUserId}/studyPlans`);
+        const studyPlansSnapshot = await get(studyPlansRef);
+        
+        if(studyPlansSnapshot.exists()){
+          const studyPlansData = studyPlansSnapshot.val();
+          const studyPlans = Object.values(studyPlansData || {});
+          
+          if(Array.isArray(studyPlans)){
+            studyPlans.forEach((plan) => {
+              if(!plan || !Array.isArray(plan.scheduleEntries)){
+                return;
+              }
+              
+              plan.scheduleEntries.forEach((entry, entryIndex) => {
+                if(!entry || !entry.date){
+                  return;
+                }
+                const key = entry.date;
+                if(!map[key]){
+                  map[key] = [];
+                }
+                
+                // 고유 식별자 생성: plan-{planId}-{entryIndex}
+                const planId = plan.id || Date.now();
+                const itemId = `plan-${planId}-${entryIndex}`;
+                
+                map[key].push({
+                  subject: plan.subject || '학습 계획',
+                  label: entry.label || '',
+                  detail: entry.detail || '',
+                  itemId: itemId,           // 고유 식별자
+                  sourceType: 'studyPlan',  // 데이터 소스 타입
+                  planId: planId,           // plan ID
+                  entryIndex: entryIndex    // entry 인덱스
+                });
+              });
+            });
+          }
+        }
+      }catch(error){
+        console.error('학습 계획 데이터를 불러오는 중 오류가 발생했습니다:', error);
+      }
+      
+      // 2. assessmentSchedules 읽기 (Firebase에서)
+      try{
+        const assessmentsRef = ref(database, `users/${currentUserId}/assessmentSchedules`);
+        const assessmentsSnapshot = await get(assessmentsRef);
+        
+        if(assessmentsSnapshot.exists()){
+          const assessmentsData = assessmentsSnapshot.val();
+          const assessments = Object.values(assessmentsData || {});
+          
+          if(Array.isArray(assessments)){
+            assessments.forEach((assessment) => {
+              if(!assessment || !assessment.date){
+                return;
+              }
+              const key = assessment.date;
+              if(!map[key]){
+                map[key] = [];
+              }
+              
+              // 고유 식별자 생성: assessment-{assessmentId}
+              const itemId = `assessment-${assessment.id}`;
+              
+              map[key].push({
+                subject: assessment.subject || '수행평가',
+                label: '수행평가',
+                detail: assessment.name || '',
+                itemId: itemId,              // 고유 식별자
+                sourceType: 'assessment',   // 데이터 소스 타입
+                assessmentId: assessment.id // assessment ID
+              });
+            });
+          }
+        }
+      }catch(error){
+        console.error('수행평가 일정 데이터를 불러오는 중 오류가 발생했습니다:', error);
+      }
+      
+      return map;
+    }
+
+    function generateCalendar(year, month){
+      const date = new Date(year, month - 1, 1);
+      const title = `${year}년 ${month}월`;
+      const days = [["일","월","화","수","목","금","토"]];
+
+      let row = new Array(7).fill("");
+      let start = date.getDay();
+
+      for(let i = 0; i < start; i++) row[i] = "";
+
+      let day = 1;
+      const lastDay = new Date(year, month, 0).getDate();
+
+      while(true){
+        if(start === 7){
+          days.push(row);
+          row = new Array(7).fill("");
+          start = 0;
+        }
+        row[start] = day;
+        day++;
+        start++;
+        if(day > lastDay){
+          days.push(row);
+          break;
+        }
+      }
+
+      return { title, days };
+    }
+
+    const today = new Date();
+    let currentYear = today.getFullYear();
+    let currentMonth = today.getMonth() + 1;
+    let scheduleEntriesMap = {};
+
+    async function renderCalendar(){
+      scheduleEntriesMap = await loadPlanEntries();
+      const data = generateCalendar(currentYear, currentMonth);
+      document.getElementById('monthTitle').innerText = data.title;
+
+      let html = "<table><tr>";
+      data.days[0].forEach(d => html += `<th>${d}</th>`);
+      html += "</tr>";
+        
+      for(let i = 1; i < data.days.length; i++){
+        html += "<tr>";
+        data.days[i].forEach(d => {
+          if(!d){
+            html += `<td></td>`;
+          }else{
+            const dateKey = `${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const plans = scheduleEntriesMap[dateKey] || [];
+            const hasPlans = plans.length > 0;
+            const tasks = hasPlans
+              ? `<ul class="task-list">${plans.map((plan, index) => {
+                  const subject = escapeHTML(plan.subject);
+                  const label = escapeHTML(plan.label);
+                  const detail = escapeHTML(plan.detail);
+                  const itemId = escapeHTML(plan.itemId);
+                  const sourceType = escapeHTML(plan.sourceType);
+                  
+                  // 개별 삭제 버튼 추가
+                  return `<li data-item-id="${itemId}" data-source-type="${sourceType}">
+                    <div>
+                      <strong>${subject}${label ? ` · ${label}` : ''}</strong>
+                      <span>${detail}</span>
+                    </div>
+                    <button class="item-delete-btn" type="button" onclick="clearItemPlan(event, '${itemId}', '${sourceType}')" title="이 항목 삭제">×</button>
+                  </li>`;
+                }).join('')}</ul>`
+              : '';
+
+            html += `
+              <td>
+                <div class='day-box${hasPlans ? ' has-plan' : ''}' data-date='${dateKey}'>
+                  <div class='day-num'>${d}</div>
+                  ${hasPlans ? `<button class="clear-btn" type="button" onclick="clearDayPlan(event, '${dateKey}')" title="이 날짜의 모든 항목 삭제">×</button>` : ''}
+                  ${tasks}
+                </div>
+              </td>`;
+          }
+        });
+        html += "</tr>";
+      }
+
+      html += "</table>";
+      document.getElementById('calendar').innerHTML = html;
+    }
+
+    async function changeMonth(move){
+      currentMonth += move;
+      if(currentMonth === 0){
+        currentMonth = 12;
+        currentYear--;
+      }else if(currentMonth === 13){
+        currentMonth = 1;
+        currentYear++;
+      }
+      await renderCalendar();
+    }
+
+    // 사용자 인증 상태 확인
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUserId = user.uid;
+        await renderCalendar();
+      } else {
+        currentUserId = null;
+        scheduleEntriesMap = {};
+        document.getElementById('calendar').innerHTML = '<p style="text-align:center; color:white; padding:2rem;">로그인이 필요합니다.</p>';
+      }
+    });
+
+    window.changeMonth = changeMonth;
+    
+    window.clearItemPlan = async function(event, itemId, sourceType){
+      event.stopPropagation();
+      event.preventDefault();
+      
+      if(!currentUserId){
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      if(!confirm('이 항목을 삭제하시겠습니까?')){
+        return;
+      }
+      
+      if(sourceType === 'assessment'){
+        // assessmentSchedules에서 삭제 (Firebase)
+        try{
+          const assessmentsRef = ref(database, `users/${currentUserId}/assessmentSchedules`);
+          const snapshot = await get(assessmentsRef);
+          
+          if(snapshot.exists()){
+            const assessmentsData = snapshot.val();
+            const assessments = Object.values(assessmentsData || {});
+            
+            // itemId에서 assessment ID 추출: "assessment-{id}"
+            const assessmentId = parseInt(itemId.replace('assessment-', ''));
+            const updated = assessments.filter(item => item && item.id !== assessmentId);
+            
+            // 객체로 변환하여 저장
+            const updatedObj = {};
+            updated.forEach(item => {
+              updatedObj[item.id] = item;
+            });
+            
+            await set(assessmentsRef, updatedObj);
+          }
+        }catch(error){
+          console.error('수행평가 일정 삭제 중 오류가 발생했습니다:', error);
+        }
+      }else if(sourceType === 'studyPlan'){
+        // studyPlans에서 삭제 (Firebase)
+        try{
+          const studyPlansRef = ref(database, `users/${currentUserId}/studyPlans`);
+          const snapshot = await get(studyPlansRef);
+          
+          if(snapshot.exists()){
+            const plansData = snapshot.val();
+            const plans = Object.values(plansData || {});
+            
+            // itemId에서 plan ID와 entryIndex 추출: "plan-{planId}-{entryIndex}"
+            const parts = itemId.replace('plan-', '').split('-');
+            const planId = parseInt(parts[0]);
+            const entryIndex = parseInt(parts[1]);
+            
+            const updated = plans.map(plan => {
+              if(!plan || plan.id !== planId || !Array.isArray(plan.scheduleEntries)){
+                return plan;
+              }
+              
+              // 해당 entryIndex의 항목만 제거
+              const filteredEntries = plan.scheduleEntries.filter((entry, idx) => idx !== entryIndex);
+              
+              return {
+                ...plan,
+                scheduleEntries: filteredEntries
+              };
+            }).filter(plan => {
+              // scheduleEntries가 비어있고 type이 'calc'가 아닌 경우 제거
+              if(!plan || !Array.isArray(plan.scheduleEntries)){
+                return true;
+              }
+              if(plan.scheduleEntries.length > 0){
+                return true;
+              }
+              return plan.type !== 'calc';
+            });
+            
+            // 객체로 변환하여 저장
+            const updatedObj = {};
+            updated.forEach(plan => {
+              updatedObj[plan.id] = plan;
+            });
+            
+            await set(studyPlansRef, updatedObj);
+          }
+        }catch(error){
+          console.error('학습 계획 삭제 중 오류가 발생했습니다:', error);
+        }
+      }
+      
+      // 캘린더 다시 렌더링
+      await renderCalendar();
+    };
+    
+    window.clearDayPlan = async function(event, dateKey){
+      event.stopPropagation();
+      
+      if(!currentUserId){
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      if(!confirm('이 날짜의 모든 항목을 삭제하시겠습니까?')){
+        return;
+      }
+      
+      // 1. studyPlans에서 해당 날짜의 모든 entry 삭제 (Firebase)
+      try{
+        const studyPlansRef = ref(database, `users/${currentUserId}/studyPlans`);
+        const snapshot = await get(studyPlansRef);
+        
+        if(snapshot.exists()){
+          const plansData = snapshot.val();
+          const plans = Object.values(plansData || {});
+          
+          const updated = plans.map(plan => {
+            if(!plan || !Array.isArray(plan.scheduleEntries)){
+              return plan;
+            }
+            const filteredEntries = plan.scheduleEntries.filter(entry => entry && entry.date !== dateKey);
+            return {
+              ...plan,
+              scheduleEntries: filteredEntries
+            };
+          }).filter(plan => {
+            if(!plan || !Array.isArray(plan.scheduleEntries)){
+              return true;
+            }
+            if(plan.scheduleEntries.length > 0){
+              return true;
+            }
+            return plan.type !== 'calc';
+          });
+          
+          // 객체로 변환하여 저장
+          const updatedObj = {};
+          updated.forEach(plan => {
+            updatedObj[plan.id] = plan;
+          });
+          
+          await set(studyPlansRef, updatedObj);
+        }
+      }catch(error){
+        console.error('학습 계획 삭제 중 오류가 발생했습니다:', error);
+      }
+      
+      // 2. assessmentSchedules에서 해당 날짜의 모든 항목 삭제 (Firebase)
+      try{
+        const assessmentsRef = ref(database, `users/${currentUserId}/assessmentSchedules`);
+        const snapshot = await get(assessmentsRef);
+        
+        if(snapshot.exists()){
+          const assessmentsData = snapshot.val();
+          const assessments = Object.values(assessmentsData || {});
+          
+          const updated = assessments.filter(item => item && item.date !== dateKey);
+          
+          // 객체로 변환하여 저장
+          const updatedObj = {};
+          updated.forEach(item => {
+            updatedObj[item.id] = item;
+          });
+          
+          await set(assessmentsRef, updatedObj);
+        }
+      }catch(error){
+        console.error('수행평가 일정 삭제 중 오류가 발생했습니다:', error);
+      }
+      
+      // 캘린더 다시 렌더링
+      await renderCalendar();
+    }
+  </script>
+
+</body>
+</html>

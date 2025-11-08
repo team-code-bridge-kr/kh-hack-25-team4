@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교실 대여 - AllOfUs</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      min-height:100vh; padding:20px;
+    }
+
+    .header{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:20px 40px;background:#fff;margin-bottom:30px;border-radius:15px;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);
+    }
+    .logo {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    .school-name{font-size:18px;color:#666;font-weight:500}
+
+    .main-container{max-width:1400px;margin:0 auto}
+
+    .floor-selector-card{
+      background:#fff;border-radius:15px;padding:25px 40px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08);margin-bottom:20px;
+      display:flex;align-items:center;gap:15px;
+    }
+    .floor-selector-card label{font-size:16px;font-weight:600;color:#333}
+    .floor-selector-card select{
+      padding:10px 20px;border:2px solid #e0e0e0;border-radius:8px;
+      font-size:15px;color:#333;background:#fff;cursor:pointer;transition:.3s;
+    }
+    .floor-selector-card select:hover{border-color:#667eea}
+    .floor-selector-card select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+
+    .floor-card{background:#fff;border-radius:15px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+    .floor-card[hidden]{display:none}
+    .floor-title{font-size:24px;font-weight:600;color:#333;margin-bottom:20px}
+
+    .floor-canvas{
+      position:relative;border:2px solid #e0e0e0;border-radius:12px;overflow:hidden;background:#fafafa;
+      width:100%; max-width:1200px; margin:0 auto;
+    }
+    .floor-canvas[data-floor="2"],
+    .floor-canvas[data-floor="3"],
+    .floor-canvas[data-floor="4"]{ aspect-ratio:35/8; }
+    .floor-canvas[data-floor="5"]{ aspect-ratio:25.29/8; }
+
+    .room,.area{
+      position:absolute;box-sizing:border-box;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:500;text-align:center;padding:8px;
+      border:2px solid #d0d0d0;background:#fff;color:#666;transition:.3s;
+    }
+    .room.clickable{
+      cursor:pointer;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      color:#fff;border-color:#667eea;
+    }
+    .room.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(102,126,234,.3)}
+    .area{background:#f0f0f0;border-color:#c0c0c0}
+
+    .modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);z-index:1000;backdrop-filter:blur(4px)}
+    .modal-backdrop[aria-hidden="false"]{display:flex}
+    .modal-card{position:relative;background:#fff;width:min(92vw,760px);max-height:min(92vh,820px);border-radius:20px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+    .modal-close{position:absolute;right:15px;top:15px;width:32px;height:32px;border:none;border-radius:50%;display:grid;place-items:center;font-size:20px;cursor:pointer;background:#f5f5f5;color:#666;transition:.3s;z-index:10}
+    .modal-close:hover{background:#e0e0e0;transform:rotate(90deg)}
+    .modal-titlebar{padding:25px 30px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-size:20px;font-weight:600}
+    .modal-head{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:20px 30px;border-bottom:2px solid #f0f0f0}
+    .modal-head select{padding:12px 16px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;color:#333;background:#fff;transition:.3s}
+    .modal-head select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+    .modal-actions{display:flex;gap:12px;align-items:center;padding:20px 30px;border-bottom:2px solid #f0f0f0}
+    .modal-actions label{font-size:14px;font-weight:600;color:#333;white-space:nowrap}
+    .modal-actions textarea{flex:1;min-height:60px;resize:vertical;font-size:14px;font-family:inherit;padding:12px;border:2px solid #e0e0e0;border-radius:8px;transition:.3s}
+    .modal-actions textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+    .modal-actions button{height:44px;padding:0 24px;border:none;border-radius:8px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:.3s}
+    .modal-actions button:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(102,126,234,.4)}
+
+    .timetable-wrap{flex:1;overflow:auto;padding:20px 30px}
+    .timetable{display:grid;grid-template-columns:100px 1fr;border:2px solid #e0e0e0;border-radius:8px;overflow:hidden}
+    .tt-cell{border-right:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;min-height:40px;display:flex;align-items:center;padding:8px 12px;font-size:14px}
+    .tt-time{background:#f8f8f8;font-weight:600;color:#333}
+    .tt-slot{background:#fff;color:#666}
+    .tt-slot.reserved{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:500}
+    .tt-slot.merge-prev{border-top:none}
+    .tt-slot.no-bottom{border-bottom:none}
+
+    @media (max-width:768px){
+      .header{flex-direction:column;gap:15px;text-align:center}
+      .floor-selector-card{flex-direction:column;align-items:stretch}
+      .modal-head{grid-template-columns:1fr}
+      .modal-actions{flex-direction:column;align-items:stretch}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">AllOfUs</div>
+    <div class="school-name">경희고등학교</div>
+  </div>
+
+  <div class="main-container">
+    <div class="floor-selector-card">
+      <label for="floorSelect">층 선택:</label>
+      <select id="floorSelect">
+        <option value="2">2층</option>
+        <option value="3">3층</option>
+        <option value="4">4층</option>
+        <option value="5">5층</option>
+      </select>
+    </div>
+
+    <!-- 2층 -->
+    <div id="floor-2" class="floor-card" data-floor="2">
+      <h1 class="floor-title">2층</h1>
+      <div class="floor-canvas" data-floor="2">
+        <div class="room" data-room-id="U-행정실" data-name="행정실(4.85)" style="left:13.0%; top:3.75%; width:12.857143%; height:35%;">행정실</div>
+        <div class="room" data-room-id="U-탕비실" data-name="탕비실(4.85)" style="left:26.357143%; top:3.75%; width:12.857143%; height:35%;">탕비실</div>
+        <div class="room" data-room-id="U-3gd" data-name="3gd교무실(4.85)" style="left:39.714286%; top:3.75%; width:15.357143%; height:35%;">3학년 교무실</div>
+        <div class="room clickable" data-room-id="U-031" data-name="3-1(4.85)" style="left:55.571428%; top:3.75%; width:13.857143%; height:35%;">3-1</div>
+        <div class="room clickable" data-room-id="U-032" data-name="3-2(4.85)" style="left:70.857143%; top:3.75%; width:13.857143%; height:35%;">3-2</div>
+        <div class="room clickable" data-room-id="U-033" data-name="3-3(4.85)" style="left:86.142857%; top:3.75%; width:calc(13.857143% - 0.5%); height:35%;">3-3</div>
+
+        <div class="room" data-room-id="U-1교무실" data-name="1교무실" style="left:13.0%; top:61.25%; width:33.014285%; height:35%;">제 1교무실</div>
+        <div class="area" data-area-type="stair" data-name="계단(3.0)" style="left:46.507143%; top:70.25%; width:8.571429%; height:35%">계단</div>
+        <div class="room clickable" data-room-id="U-036" data-name="2-8(4.85)" style="left:55.571428%; top:61.25%; width:13.857143%; height:35%;">2-8</div>
+        <div class="room clickable" data-room-id="U-035" data-name="2-7(4.85)" style="left:70.857143%; top:61.25%; width:13.857143%; height:35%;">2-7</div>
+        <div class="room clickable" data-room-id="U-034" data-name="2-6(4.85)" style="left:86.142857%; top:61.25%; width:calc(13.857143% - 0.5%); height:35%;">2-6</div>
+      </div>
+    </div>
+
+    <!-- 3층 -->
+    <div id="floor-3" class="floor-card" data-floor="3" hidden>
+      <h1 class="floor-title">3층</h1>
+      <div class="floor-canvas" data-floor="3">
+        <div class="room" data-room-id="U-01CH" data-name="제 1청운제(14.4)" style="left:13.0%; top:3.75%; width:41.142857%; height:35%;">제 1청운제</div>
+        <div class="room clickable" data-room-id="U-037" data-name="3-7(4.85)" style="left:55.571428%; top:3.75%; width:13.857143%; height:35%;">3-7</div>
+        <div class="room clickable" data-room-id="U-038" data-name="3-8(4.85)" style="left:70.857143%; top:3.75%; width:13.857143%; height:35%;">3-8</div>
+        <div class="room clickable" data-room-id="U-025" data-name="2-5(4.85)" style="left:86.142857%; top:3.75%; width:calc(13.857143% - 0.5%); height:35%;">2-5</div>
+
+        <div class="room" data-room-id="U-상담" data-name="상담(4.57)" style="left:13.0%; top:45.25%; width:13.057143%; height:51%;">상담</div>
+        <div class="room" data-room-id="U-세미나" data-name="세미나실(2.6)" style="left:26.485714%; top:61.25%; width:6.042857%; height:35%;">세미나실</div>
+        <div class="room" data-room-id="U-교장" data-name="교장실(4.57)" style="left:32.957142%; top:61.25%; width:13.057143%; height:35%;">교장실</div>
+        <div class="area" data-area-type="U-계단" data-name="계단(3.0)" style="left:46.507143%; top:70.25%; width:8.571429%; height:35%">계단</div>
+        <div class="room clickable" data-room-id="U-028" data-name="2-8(4.85)" style="left:55.571428%; top:61.25%; width:13.857143%; height:35%;">2-8</div>
+        <div class="room clickable" data-room-id="U-027" data-name="2-7(4.85)" style="left:70.857143%; top:61.25%; width:13.857143%; height:35%;">2-7</div>
+        <div class="room clickable" data-room-id="U-026" data-name="2-6(4.85)" style="left:86.142857%; top:61.25%; width:calc(13.857143% - 0.5%); height:35%;">2-6</div>
+      </div>
+    </div>
+
+    <!-- 4층 -->
+    <div id="floor-4" class="floor-card" data-floor="4" hidden>
+      <h1 class="floor-title">4층</h1>
+      <div class="floor-canvas" data-floor="4">
+        <div class="room" data-room-id="U-5계단" data-name="5계단(6.43)" style="left:27.642858%; top:-6.75%; width:5.785%; height:35%;">계단</div>
+        <div class="room clickable" data-room-id="U-024" data-name="2-4(4.85)" style="left:40.28571355%; top:3.75%; width:13.857143%; height:35%;">2-4</div>
+        <div class="room clickable" data-room-id="U-023" data-name="2-3(4.85)" style="left:55.571428%; top:3.75%; width:13.857143%; height:35%;">2-3</div>
+        <div class="room clickable" data-room-id="U-022" data-name="2-2(4.85)" style="left:70.857143%; top:3.75%; width:13.857143%; height:35%;">2-2</div>
+        <div class="room clickable" data-room-id="U-021" data-name="2-1(4.85)" style="left:86.142857%; top:3.75%; width:calc(13.857143% - 0.5%); height:35%;">2-1</div>
+
+        <div class="room" data-room-id="U-2gd" data-name="2gd교무실(6.43)" style="left:27.642858%; top:61.25%; width:18.371429%; height:35%;">2학년 교무실</div>
+        <div class="area" data-area-type="U-메인계단" data-name="메인계단(3.0)" style="left:46.507143%; top:70.25%; width:8.571429%; height:35%">계단</div>
+        <div class="room clickable" data-room-id="U-011" data-name="1-1(4.85)" style="left:55.571428%; top:61.25%; width:13.857143%; height:35%;">1-1</div>
+        <div class="room clickable" data-room-id="U-012" data-name="1-2(4.85)" style="left:70.857143%; top:61.25%; width:13.857143%; height:35%;">1-2</div>
+        <div class="room clickable" data-room-id="U-013" data-name="1-3(4.85)" style="left:86.142857%; top:61.25%; width:calc(13.857143% - 0.5%); height:35%;">1-3</div>
+      </div>
+    </div>
+
+    <!-- 5층 -->
+    <div id="floor-5" class="floor-card" data-floor="5" hidden>
+      <h1 class="floor-title">5층</h1>
+      <div class="floor-canvas" data-floor="5">
+        <div class="room" data-room-id="U-5계단" data-name="5계단(6.43)" style="left:2%; top:-6.75%; width:9.785%; height:35%;">계단</div>
+        <div class="room clickable" data-room-id="U-014" data-name="1-4(4.85)" style="left:13.964966%; top:3.75%; width:19.177541%; height:35%;">1-4</div>
+        <div class="room clickable" data-room-id="U-015" data-name="1-5(4.85)" style="left:35.119573%; top:3.75%; width:19.177541%; height:35%;">1-5</div>
+        <div class="room clickable" data-room-id="U-016" data-name="1-6(4.85)" style="left:56.274180%; top:3.75%; width:19.177541%; height:35%;">1-6</div>
+        <div class="room" data-room-id="U-컴퓨터실" data-name="컴퓨터실(5.86)" style="left:77.428786%; top:3.75%; width:calc(23.171214% - 1.977066%); height:35%;">컴퓨터실</div>
+
+        <div class="room" data-room-id="U-1gdA" data-name="1gd교무실(4.85)" style="left:1%; top:61.25%; width:12%; height:35%;">1학년 교무실</div>
+        <div class="room clickable" data-room-id="U-1gdB" data-name="1gd교무실(4.85)" style="left:13.964966%; top:61.25%; width:19.177541%; height:35%;">1학년 교무실</div>
+        <div class="room clickable" data-room-id="U-018" data-name="1-8(4.85)" style="left:35.119573%; top:61.25%; width:19.177541%; height:35%;">1-8</div>
+        <div class="room clickable" data-room-id="U-017" data-name="1-7(4.85)" style="left:56.274180%; top:61.25%; width:19.177541%; height:35%;">1-7</div>
+        <div class="room" data-room-id="U-03CH" data-name="제 3청운재(5.86)" style="left:77.428786%; top:61.25%; width:calc(23.171214% - 1.977066%); height:35%;">제 3청운재</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 -->
+  <div id="bookingModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
+      <div class="modal-titlebar" id="modalTitle">교실 예약</div>
+
+      <div class="modal-head">
+        <select id="startTime"><option value="" selected disabled>시작 시간</option></select>
+        <select id="endTime"><option value="" selected disabled>종료 시간</option></select>
+      </div>
+
+      <div class="modal-actions">
+        <label for="reason">예약 사유:</label>
+        <textarea id="reason" placeholder="예약 사유를 입력하세요"></textarea>
+        <button id="reserveBtn">예약하기</button>
+      </div>
+
+      <div class="timetable-wrap"><div id="timetable" class="timetable"></div></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Firebase 모듈 임포트
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, onValue, off } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+    // Firebase 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1HNrS-TcAUvmJvWJYowzIPbyIC1_sMjg",
+      authDomain: "hack-7974a.firebaseapp.com",
+      projectId: "hack-7974a",
+      storageBucket: "hack-7974a.firebasestorage.app",
+      messagingSenderId: "831807416935",
+      appId: "1:831807416935:web:461949fd6baa1510e042c2",
+      measurementId: "G-DKMJZBKLG2"
+    };
+
+    // Firebase 초기화
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+    const RESERVATIONS_PATH = 'classroomReservations';
+    
+    // 오늘 날짜를 YYYY-MM-DD 형식으로 반환
+    function getTodayDateString() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    
+    // 날짜별 예약 경로 반환
+    function getReservationsPathForDate(dateString = null) {
+      const date = dateString || getTodayDateString();
+      return `${RESERVATIONS_PATH}/${date}`;
+    }
+    
+    let currentUser = null;
+    
+    // 인증 상태 확인
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if (user) {
+        console.log('로그인된 사용자:', user.email);
+        // 로그인된 경우에만 데이터 로드
+        loadReservationsFromFirebase();
+        setupRealtimeSync();
+      } else {
+        console.log('로그인되지 않음');
+        // 로그인 페이지로 리다이렉트하거나 경고 표시
+        const shouldRedirect = confirm('교실 예약을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?');
+        if (shouldRedirect) {
+          window.location.href = 'login.html';
+        }
+      }
+    });
+
+    // 층 전환
+    const select = document.getElementById('floorSelect');
+    const floorCards = document.querySelectorAll('.floor-card');
+    
+    function showFloor(floorValue) {
+      floorCards.forEach(card => {
+        card.hidden = (card.dataset.floor !== floorValue);
+      });
+    }
+    
+    showFloor(select.value);
+    select.addEventListener('change', e => showFloor(e.target.value));
+
+    // 예약 데이터 (메모리 저장 + Firebase 동기화)
+    const reservations = new Map();
+
+    // 시간 옵션 & 타임테이블
+    const HALF_HOURS = makeHalfHours("16:00", "22:00");
+    const TT_SLOTS = makeHalfHours("16:00", "21:30");
+
+    function makeHalfHours(start, endInclusive) {
+      const [sh, sm] = start.split(':').map(Number);
+      const [eh, em] = endInclusive.split(':').map(Number);
+      const res = [];
+      let t = sh * 60 + sm, last = eh * 60 + em;
+      while (t <= last) {
+        res.push(min2hm(t));
+        t += 30;
+      }
+      return res;
+    }
+
+    function min2hm(m) {
+      const h = Math.floor(m / 60);
+      const mm = (m % 60).toString().padStart(2, '0');
+      return `${h}:${mm}`;
+    }
+
+    function hm2min(s) {
+      const [h, m] = s.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    // 모달 관련
+    const modal = document.getElementById('bookingModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const startSel = document.getElementById('startTime');
+    const endSel = document.getElementById('endTime');
+    const reasonEl = document.getElementById('reason');
+    const reserveBtn = document.getElementById('reserveBtn');
+    const modalClose = document.getElementById('modalClose');
+    const timetableEl = document.getElementById('timetable');
+
+    let currentRoom = "";
+
+    modalClose.addEventListener('click', () => closeAndResetModal());
+
+    function openModalFor(roomLabel) {
+      currentRoom = roomLabel;
+      modalTitle.textContent = `${currentRoom} 교실 예약`;
+      fillTimeOptions();
+      reasonEl.value = "";
+      renderTimetable(currentRoom);
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeAndResetModal() {
+      modal.setAttribute('aria-hidden', 'true');
+      startSel.value = "";
+      endSel.value = "";
+      reasonEl.value = "";
+    }
+
+    function fillTimeOptions() {
+      [startSel, endSel].forEach(sel => {
+        for (let i = sel.options.length - 1; i >= 1; i--) sel.remove(i);
+        HALF_HOURS.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          sel.appendChild(opt);
+        });
+        sel.value = "";
+      });
+    }
+
+    function paintRange(start, end) {
+      if (!start || !end) return; // 시작/종료 시간이 없으면 종료
+      
+      const s = hm2min(start), e = hm2min(end);
+      if (isNaN(s) || isNaN(e)) return; // 유효하지 않은 시간이면 종료
+      
+      const cells = [...timetableEl.querySelectorAll('.tt-slot')];
+      if (cells.length === 0) return; // 셀이 없으면 종료
+      
+      let prevIndex = -1;
+      cells.forEach((cell, idx) => {
+        if (!cell || !cell.dataset || !cell.dataset.time) return; // 유효하지 않은 셀이면 스킵
+        
+        const t = hm2min(cell.dataset.time);
+        if (isNaN(t)) return; // 유효하지 않은 시간이면 스킵
+        
+        if (t >= s && t < e) {
+          cell.classList.add('reserved');
+          if (prevIndex >= 0 && prevIndex === idx - 1 && cells[prevIndex]) {
+            cell.classList.add('merge-prev');
+            cells[prevIndex].classList.add('no-bottom');
+          }
+          prevIndex = idx;
+        }
+      });
+    }
+
+    function renderTimetable(roomLabel) {
+      if (!timetableEl) return; // timetableEl이 없으면 종료
+      
+      timetableEl.innerHTML = "";
+      TT_SLOTS.forEach(t => {
+        const timeCell = document.createElement('div');
+        timeCell.className = 'tt-cell tt-time';
+        timeCell.textContent = t;
+        const slotCell = document.createElement('div');
+        slotCell.className = 'tt-cell tt-slot';
+        slotCell.dataset.time = t;
+        timetableEl.appendChild(timeCell);
+        timetableEl.appendChild(slotCell);
+      });
+      
+      // DOM이 완전히 렌더링된 후 예약 표시
+      const list = reservations.get(roomLabel) || [];
+      if (list.length > 0) {
+        // 약간의 지연을 두어 DOM이 완전히 업데이트되도록 함
+        setTimeout(() => {
+          list.forEach(r => {
+            if (r && r.start && r.end) {
+              paintRange(r.start, r.end);
+            }
+          });
+        }, 0);
+      }
+    }
+
+    // Firebase에서 예약 데이터 불러오기 (오늘 날짜만)
+    async function loadReservationsFromFirebase() {
+      try {
+        const todayPath = getReservationsPathForDate();
+        const reservationsRef = ref(database, todayPath);
+        const snapshot = await get(reservationsRef);
+        
+        reservations.clear();
+        
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          
+          // Firebase 데이터를 Map으로 변환
+          Object.keys(data).forEach(roomLabel => {
+            if (Array.isArray(data[roomLabel])) {
+              reservations.set(roomLabel, data[roomLabel]);
+            }
+          });
+        }
+        
+        console.log('오늘 날짜의 예약 데이터를 불러왔습니다:', getTodayDateString());
+      } catch (error) {
+        console.error('예약 데이터 불러오기 실패:', error);
+      }
+    }
+
+    // Firebase에 예약 데이터 저장 (오늘 날짜로)
+    async function saveReservationsToFirebase() {
+      try {
+        const todayPath = getReservationsPathForDate();
+        const dataToSave = {};
+        reservations.forEach((reservationList, roomLabel) => {
+          dataToSave[roomLabel] = reservationList;
+        });
+        
+        const reservationsRef = ref(database, todayPath);
+        await set(reservationsRef, dataToSave);
+        console.log('오늘 날짜의 예약 데이터가 Firebase에 저장되었습니다:', getTodayDateString());
+      } catch (error) {
+        console.error('예약 데이터 저장 실패:', error);
+        alert('예약 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    }
+
+    // 사용자 정보에 예약 내역 저장
+    async function saveReservationToUser(reservationData) {
+      if (!currentUser) return;
+      
+      try {
+        const userReservationsRef = ref(database, `${currentUser.uid}/classroomReservations`);
+        const snapshot = await get(userReservationsRef);
+        
+        let userReservations = [];
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          userReservations = Array.isArray(data) ? data : [];
+        }
+        
+        // 새 예약 추가
+        userReservations.push(reservationData);
+        
+        // 사용자 예약 내역 저장
+        await set(userReservationsRef, userReservations);
+        console.log('사용자 예약 내역이 저장되었습니다.');
+      } catch (error) {
+        console.error('사용자 예약 내역 저장 실패:', error);
+        // 사용자 예약 저장 실패는 전체 예약 실패로 이어지지 않도록 함
+      }
+    }
+
+    // Firebase 실시간 동기화 (오늘 날짜의 예약만 실시간으로 반영)
+    function setupRealtimeSync() {
+      const todayPath = getReservationsPathForDate();
+      const reservationsRef = ref(database, todayPath);
+      
+      // 기존 리스너 제거 (날짜가 바뀌었을 때를 대비)
+      off(reservationsRef);
+      
+      onValue(reservationsRef, (snapshot) => {
+        reservations.clear();
+        
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          
+          Object.keys(data).forEach(roomLabel => {
+            if (Array.isArray(data[roomLabel])) {
+              reservations.set(roomLabel, data[roomLabel]);
+            }
+          });
+        }
+        
+        // 현재 열려있는 모달이 있다면 타임테이블 다시 렌더링
+        if (currentRoom && modal.getAttribute('aria-hidden') === 'false') {
+          renderTimetable(currentRoom);
+        }
+      }, (error) => {
+        console.error('실시간 동기화 오류:', error);
+      });
+    }
+    
+    // 날짜 변경 감지 및 자동 초기화
+    let lastDate = getTodayDateString();
+    
+    function checkDateChange() {
+      const currentDate = getTodayDateString();
+      if (currentDate !== lastDate) {
+        console.log('날짜가 변경되었습니다. 예약을 초기화합니다.');
+        lastDate = currentDate;
+        reservations.clear();
+        setupRealtimeSync();
+        loadReservationsFromFirebase();
+        
+        // 열려있는 모달이 있다면 닫기
+        if (modal.getAttribute('aria-hidden') === 'false') {
+          closeAndResetModal();
+        }
+      }
+    }
+    
+    // 1분마다 날짜 변경 확인
+    setInterval(checkDateChange, 60000);
+
+    function hasOverlap(roomLabel, s, e) {
+      const list = reservations.get(roomLabel) || [];
+      const S = hm2min(s), E = hm2min(e);
+      return list.some(r => {
+        const RS = hm2min(r.start), RE = hm2min(r.end);
+        return S < RE && E > RS;
+      });
+    }
+    const selectableRooms = new Set([
+      "1-1","1-2","1-3","1-4","1-8",
+      "2-1","2-2","2-3","2-4","2-5","2-6","2-7","2-8",
+      "3-1","3-2","3-3","3-4","3-5","3-6","3-7","3-8"
+    ]);
+
+    function labelFromEl(el){
+      // data-name="1-2(4.85)" 형태 → "1-2"
+      const txt = (el.dataset.name?.split('(')[0] || el.textContent).trim();
+      return txt;
+    }
+
+    function wireRoomClicks() {
+      document.querySelectorAll('.room').forEach(el => {
+        const label = labelFromEl(el);
+        if (selectableRooms.has(label)) {
+          el.classList.add('clickable');
+          el.onclick = () => openModalFor(label);
+        }
+      });
+    }
+    wireRoomClicks();
+
+    // 예약 버튼
+    reserveBtn.addEventListener('click', async () => {
+      const s = startSel.value, e = endSel.value;
+      if (!s || !e) { alert("시작/종료 시간을 선택하세요."); return; }
+      if (hm2min(s) >= hm2min(e)) { alert("종료 시간은 시작 시간보다 늦어야 합니다."); return; }
+
+      if (hasOverlap(currentRoom, s, e)) {
+        alert("이미 예약한 사람이 있습니다.");
+        // 입력란만 리셋(창은 유지)
+        startSel.value = "";
+        endSel.value = "";
+        reasonEl.value = "";
+        return;
+      }
+
+      if (!currentUser) {
+        alert('로그인이 필요합니다.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const list = reservations.get(currentRoom) || [];
+      const newReservation = { 
+        start: s, 
+        end: e, 
+        reason: reasonEl.value.trim() || '사유 없음',
+        createdAt: new Date().toISOString(),
+        date: getTodayDateString(), // 예약 날짜 추가
+        roomLabel: currentRoom, // 교실 정보 추가
+        userId: currentUser.uid,
+        userEmail: currentUser.email || '알 수 없음'
+      };
+      list.push(newReservation);
+      reservations.set(currentRoom, list);
+
+      // Firebase에 저장 (날짜별 예약)
+      await saveReservationsToFirebase();
+      
+      // 사용자 정보에도 예약 내역 저장
+      await saveReservationToUser(newReservation);
+
+      alert("예약되었습니다.");
+      // 다시 들어가면 리셋 + 색은 유지되도록 닫기
+      closeAndResetModal();
+    });
+  </script>
+</body>
+</html>

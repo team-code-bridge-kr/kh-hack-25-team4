@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllOfUs 회원가입</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-purple-400 to-indigo-600 text-gray-900 flex items-center justify-center min-h-screen p-4">
+
+  <div class="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8">
+    <a href="/index.html" class="inline-flex items-center text-sm font-semibold text-indigo-500 hover:text-indigo-600 hover:underline mb-6" aria-label="대시보드로 돌아가기">← 돌아가기</a>
+    
+    <h1 class="text-center text-4xl font-light mb-8 text-gray-800 tracking-wider">AllOfUs</h1>
+
+    <div id="loggedOut" class="flex flex-col gap-4">
+      <input type="email" id="email" placeholder="이메일 주소" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" required/>
+      <input type="password" id="password" placeholder="비밀번호" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" required/>
+      <input type="text" id="username" placeholder="사용자 이름" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400" required/>
+      
+      <button onclick="signup()" class="w-full p-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300 mt-2">회원가입</button>
+    </div>
+
+    <p class="text-center text-gray-400 text-sm my-6">또는</p>
+
+    <div class="flex flex-col gap-3">
+      <button class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition duration-200">카카오로 회원가입</button>
+      <button class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition duration-200">구글로 회원가입</button>
+      <button class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition duration-200">페이스북으로 회원가입</button>
+    </div>
+
+    <p class="text-center text-gray-500 text-sm mt-6">
+      이미 계정이 있으신가요?
+      <a href="/login.html" class="font-medium text-indigo-600 hover:text-indigo-500 hover:underline">
+        로그인
+      </a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1HNrS-TcAUvmJvWJYowzIPbyIC1_sMjg",
+      authDomain: "hack-7974a.firebaseapp.com",
+      databaseURL: "https://hack-7974a-default-rtdb.firebaseio.com",
+      projectId: "hack-7974a",
+      storageBucket: "hack-7974a.firebasestorage.app",
+      messagingSenderId: "831807416935",
+      appId: "1:831807416935:web:461949fd6baa1510e042c2",
+      measurementId: "G-DKMJZBKLG2"
+    };
+
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    window.signup = async function () {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const username = document.getElementById("username").value.trim();
+
+      if (!validateEmail(email)) {
+        alert("유효한 이메일을 입력하세요.");
+        return;
+      }
+      if (password.length < 6) {
+        alert("비밀번호는 6자 이상이어야 합니다.");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log("회원가입 성공:", user);
+
+        // Realtime Database에만 저장
+        await set(ref(database, `users/${user.uid}`), {
+          username: username,
+          email: email,
+          money: 0,
+          uid: user.uid,
+        });
+
+        await set(ref(database, `users/${user.uid}/cartlist/0`), {
+          booth_code: "NONAME",
+          totalprice: 0,
+        });
+
+        alert("회원가입이 완료되었습니다!");
+        window.location.href = "/index.html";
+      } catch (error) {
+        console.error("회원가입 실패:", error);
+        if (error.code === "auth/email-already-in-use") {
+          alert("이미 가입된 이메일입니다.");
+        } else {
+          alert("오류 발생: " + error.message);
+        }
+      }
+    };
+  </script>
+</body>
+</html>
